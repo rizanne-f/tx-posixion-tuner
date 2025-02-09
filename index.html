@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" href="https://www.shareicon.net/download/2015/10/06/113433_arrows.ico" type="image/x-icon" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js"></script>
+    <title>PosiXion</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: sans-serif;
+      }
+      .wrapper {
+        display: flex;
+        justify-content: center;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 10px;
+      }
+      #jsonText {
+        /* border-radius: 0.25rem; */
+        border-radius: 0 0 0.25rem 0.25rem;
+        min-width: 600px;
+        max-width: 800px;
+        min-height: 152px;
+        max-height: 300px;
+        padding: 5px;
+        border: solid 1px #ddd;
+      }
+      .btn-container {
+        margin-top: 10px;
+        display: flex;
+        width: 100%;
+        min-width: 600px;
+        justify-content: space-between;
+      }
+      .tuner-settings {
+        display: flex;
+        gap: 10px;
+      }
+      .add-sku-container {
+        display: flex;
+        width: 10rem;
+      }
+      #add-sku {
+        border-radius: 0.5rem 0 0 0.5rem;
+      }
+      .add-sku-itemx {
+        border-radius: 0 0.5rem 0.5rem 0;
+        border: solid 1px #ddd;
+        border-left: transparent;
+        width: 4rem;
+        padding: 5px;
+      }
+      .unit-container {
+        display: flex;
+        gap: 10px;
+        border: solid 1px #ddd;
+        border-radius: 10px;
+        padding: 0.25rem 1rem;
+        font-size: small;
+      }
+      .unit {
+        display: flex;
+        gap: 5px;
+      }
+      button {
+        padding: 0.25rem 1rem;
+        border: solid 1px #ddd;
+        border-radius: 10px;
+      }
+      .item-x-setting > * {
+        margin: 5px 0px 5px 0px;
+        width: 100%;
+      }
+      .item-x-setting > input {
+        padding: 5px;
+      }
+      .remove-sku:hover {
+        color: red;
+        cursor: pointer;
+      }
+      #display-shelf:enabled {
+        background-color: #333;
+        color: #fefefe;
+      }
+      button:enabled:hover {
+        background-color: #e2e2e2;
+        cursor: pointer;
+      }
+      #scan-job {
+        width: 100%;
+        border-radius: 0.25rem 0.25rem 0 0;
+        text-align: left;
+      }
+      #scan-job:after {
+        font-family: "Material Symbols Outlined";
+        content: var(--after-content, "\e313"); /* Default value */
+        float: right;
+      }
+      .active {
+        background-color: #e2e2e2;
+        border-radius: 0.25rem !important;
+      }
+      .active:after {
+        content: "\e316";
+      }
+      button.material-symbols-outlined {
+        line-height: 1;
+        vertical-align: middle;
+      }
+      .sku-list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 10px;
+      }
+      .sku-info {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        align-items: center;
+        text-align: center;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin: 5px;
+        padding: 5px;
+        gap: 10px;
+        width: 40px;
+        min-width: 40px;
+        max-width: 80px;
+        overflow: hidden;
+        resize: horizontal;
+      }
+      .sku-info img {
+        width: auto;
+        max-height: 50px;
+        cursor: pointer;
+      }
+      p {
+        margin: 0;
+        padding: 0;
+        font-size: 12px;
+      }
+      input[type="radio"] {
+        accent-color: #333;
+      }
+      .posX {
+        width: 100%;
+      }
+      image, input[type="checkbox"] {
+        cursor: pointer;
+      }
+	  .itemX {
+	    cursor: grab;
+	  }
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .selected-ref {
+        border: 1px solid green;
+        background-color: #f2ffe5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <h1 style="margin: 0; font-size:x-large; font-weight: lighter; margin-bottom: 10px">PosiXion Tuner</h1>
+        <button id="scan-job" onclick="hideTextarea()">Hide Scan Job</button>
+        <textarea id="jsonText" rows="10" cols="50"></textarea>
+        <div class="btn-container">
+          <button id="clear" onclick="(()=>document.getElementById('jsonText').value='')()">Clear Scan Job</button>
+          <div class="tuner-settings">
+            <div class="add-sku-container">
+              <button id="add-sku" onclick="addSku()">Add SKU</button>
+              <input type="number" id="add-itemX" class="add-sku-itemx" placeholder="Item X">
+            </div>
+            <div class="unit-container">
+              <div class="unit">
+                <input type="radio" name="unit" id="unit-m" value="m" onclick="calcPosX()" checked />
+                <label for="unit-m">m</label>
+              </div>
+              <div class="unit">
+                <input type="radio" name="unit" id="unit-mm" value="mm" onclick="calcPosX()" title="Under Development" disabled/>
+                <label for="unit-mm">mm</label>
+              </div>
+            </div>
+            <button id="display-shelf" onclick="displayShelf()">Display Shelf</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="shelfDisplay" class="sku-list"></div>
+
+    <script>
+      $("#shelfDisplay").sortable({
+        handle: ".itemX",
+        cursor: "move"
+      });
+      $("#shelfDisplay").on( "sortupdate", calcPosX );
+
+      function hideTextarea() {
+        const jsonTextarea = document.getElementById("jsonText");
+        const showHideBtn = document.getElementById("scan-job");
+
+        showHideBtn.classList.toggle("active");
+
+        if (showHideBtn.classList.contains("active")) {
+            jsonTextarea.style.display = "none";
+            showHideBtn.textContent = "Show Scan Job";
+            showHideBtn.style.setProperty("--after-content", "'\\e316'");
+        } else {
+            jsonTextarea.style.display = "block";
+            showHideBtn.textContent = "Hide Scan Job";
+            showHideBtn.style.setProperty("--after-content", "'\\e313'");
+        }
+      }
+
+      function displayShelf() {
+        const jsonText = document.getElementById("jsonText").value;
+        const shelfDisplay = document.getElementById("shelfDisplay");
+
+        try {
+          const data = JSON.parse(jsonText);
+          const scanLocations = data.context.ScanLocations;
+          const skus = data.context.Skus;
+
+          shelfDisplay.innerHTML = "";
+
+          scanLocations.forEach((sku) => {
+            const skuId = skus[sku.SkuId];
+            const skuImage = skuId ? skuId.Images[0] : "";
+            const skuX = skuId ? skuId.X : "0";
+
+            const skuDiv = document.createElement("div");
+            skuDiv.classList.add("sku-info");
+            skuDiv.innerHTML = `
+              <input type="checkbox" class="sku-ref">
+              <p class="itemX">${skuX}</p>
+              ${skuImage ? `<img src="${skuImage}" alt="SKU Image" title="Copy PosX">` : "<p>None</p>"}
+              <input type="number" class="posX" disabled>`;
+            skuDiv
+              .querySelector(".sku-ref")
+              .addEventListener("change", handleCheckboxChange);
+            shelfDisplay.appendChild(skuDiv);
+          });
+
+        } catch (error) {
+          shelfDisplay.innerHTML = "<p style='color:red;'>Invalid Scan Job JSON input.</p>";
+          console.error("JSON parsing error:", error);
+        }
+      }
+
+      function handleCheckboxChange(event) {
+        const checkbox = event.target;
+        const skuDiv = checkbox.parentNode;
+        const input = skuDiv.querySelector('input[type="number"]');
+        const skuList = skuDiv.parentNode;
+        const checkboxes = skuList.querySelectorAll(".sku-ref");
+
+        checkboxes.forEach((cb) => {
+          const otherSkuDiv = cb.parentNode;
+          if (cb !== checkbox) {
+            cb.checked = false;
+            otherSkuDiv.classList.remove("selected-ref");
+            const otherInput = otherSkuDiv.querySelector(
+              'input[type="number"]'
+            );
+            otherInput.disabled = true;
+          }
+        });
+
+        if (checkbox.checked) {
+          skuDiv.classList.add("selected-ref");
+        } else {
+          skuDiv.classList.remove("selected-ref");
+        }
+
+        input.disabled = !checkbox.checked;
+        input.oninput = calcPosX;
+      }
+
+      function calcPosX() {
+        const container = document.querySelector(".sku-list");
+        const reference = document.querySelector(".selected-ref");
+        const referenceInput = document.querySelector(".posX");
+        const referenceItemX = parseFloat(
+          reference.querySelector(".itemX").textContent.trim()
+        );
+        const referenceIndex = Array.from(container.children).indexOf(
+          reference
+        );
+        const referencePos = referenceInput.value.trim()
+          ? parseFloat(referenceInput.value)
+          : 0;
+        const isMM = document.getElementById("unit-mm").checked;
+        const unitMultiplier = isMM ? 1000 : 1;
+
+        referenceInput.title = parseFloat(referenceInput.value);
+
+        for (let i = referenceIndex - 1; i >= 0; i--) {
+          const currentItem = container.children[i];
+          const currentItemX = parseFloat(
+            currentItem.querySelector(".itemX").textContent.trim()
+          );
+          const nextItem = container.children[i + 1];
+          const nextSize = parseFloat(
+            nextItem.querySelector(".itemX").textContent.trim()
+          );
+          const positionInput = currentItem.querySelector(".posX");
+          let newValue =
+            currentItemX / 2 +
+            nextSize / 2 +
+            parseFloat(nextItem.querySelector(".posX").value);
+
+          positionInput.value = newValue * unitMultiplier;
+          positionInput.title = newValue * unitMultiplier;
+        }
+
+        for (let i = referenceIndex + 1; i < container.children.length; i++) {
+          const currentItem = container.children[i];
+          const currentItemX = parseFloat(
+            currentItem.querySelector(".itemX").textContent.trim()
+          );
+          const positionInput = currentItem.querySelector(".posX");
+
+          let prevItem =
+            i === referenceIndex + 1 ? reference : container.children[i - 1];
+          let prevPos = parseFloat(prevItem.querySelector(".posX").value);
+          let prevSize = parseFloat(
+            prevItem.querySelector(".itemX").textContent.trim()
+          );
+          let newValue = prevPos - (currentItemX / 2 + prevSize / 2);
+
+          positionInput.value = newValue * unitMultiplier;
+          positionInput.title = newValue * unitMultiplier;
+        }
+      }
+
+      document.addEventListener("click", function (event) {
+        if (event.target.tagName === "IMG") {
+          const skuDiv = event.target.closest(".sku-info");
+          const positionInput = skuDiv.querySelector(".posX");
+
+          if (positionInput) {
+            const valueToCopy = positionInput.value;
+
+            navigator.clipboard.writeText(valueToCopy);
+
+            const tooltip = document.createElement("div");
+            tooltip.textContent = "Copied!";
+            tooltip.style.position = "absolute";
+            tooltip.style.backgroundColor = "#333";
+            tooltip.style.color = "#fff";
+            tooltip.style.padding = "5px 10px";
+            tooltip.style.borderRadius = "5px";
+            tooltip.style.fontSize = "12px";
+            tooltip.style.whiteSpace = "nowrap";
+            tooltip.style.boxShadow = "0px 0px 5px rgba(0,0,0,0.3)";
+            tooltip.style.zIndex = "1000";
+
+            const rect = event.target.getBoundingClientRect();
+            tooltip.style.left = `${
+              rect.left + window.scrollX + rect.width / 2
+            }px`;
+            tooltip.style.top = `${rect.top + window.scrollY - 25}px`;
+
+            document.body.appendChild(tooltip);
+
+            setTimeout(() => {
+              document.body.removeChild(tooltip);
+            }, 1000);
+          }
+        }
+      });
+
+      function addSku() {
+        const shelfDisplay = document.getElementById("shelfDisplay");
+        const skuDiv = document.createElement("div");
+        const addItemX = parseFloat(document.getElementById("add-itemX").value) || 0;
+        skuDiv.classList.add("sku-info");
+        // <input type="checkbox" class="sku-ref">
+        skuDiv.innerHTML = `
+            <span class="material-symbols-outlined remove-sku" style="font-size: 16px;" onclick="removeSku(this)">close</span>
+            <p class="itemX">${addItemX}</p>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcim2ROR727fdIBtgE1lzD0HlK9j4tLNRC1A&s" alt="SKU Image" title="Copy PosX">
+            <input type="number" class="posX" disabled>
+        `;
+        // skuDiv.querySelector(".sku-ref").addEventListener("change", handleCheckboxChange);
+        shelfDisplay.appendChild(skuDiv); 
+        calcPosX();
+      }
+
+      function removeSku(event) {
+        event.parentElement.remove();
+        calcPosX();
+      }
+    </script>
+  </body>
+</html>
